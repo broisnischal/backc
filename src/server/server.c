@@ -5,21 +5,22 @@
 #include <arpa/inet.h>
 #include "../hello/hello.h"
 #include "router.h"
+#include "response.h"
 
 // Example handler function for GET request
-void hello_handler()
+void hello_handler(int client_socket)
 {
-    hello(); // Call the hello function from the library
+    const char *response_body = "Hello, World!";
+    response(client_socket, "200 OK", "text/html", response_body);
 }
 
-// Function to handle client connections
 void handle_client(int client_socket)
 {
     char buffer[1024];
     int read_size;
 
-    // Receive request from client
     read_size = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
+
     if (read_size > 0)
     {
         buffer[read_size] = '\0'; // Null-terminate the string
@@ -32,15 +33,15 @@ void handle_client(int client_socket)
         if (strcmp(method, "GET") == 0)
         {
             // Call the router to handle the request path
-            handle_request(path, method);
+            handle_request(path, method, client_socket); // Pass the socket to the router
         }
         else
         {
-            printf("405 Method Not Allowed\n");
+            // If not a GET request, send a 405 Method Not Allowed response
+            response(client_socket, "405 Method Not Allowed", "text/plain", "Method Not Allowed");
         }
     }
 
-    // Close the client socket
     close(client_socket);
 }
 
@@ -62,7 +63,7 @@ int main()
     // Set up the server address structure
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY; // Listen on any IP address
-    server_addr.sin_port = htons(8080);       // Listen on port 8080
+    server_addr.sin_port = htons(8000);       // Listen on port 8080
 
     // Bind the socket
     if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
@@ -73,16 +74,15 @@ int main()
     }
 
     // Listen for incoming connections
-    if (listen(server_socket, 5) < 0)
+    if (listen(server_socket, 10) < 0)
     {
         perror("Listening failed");
         close(server_socket);
         exit(EXIT_FAILURE);
     }
 
-    printf("Server listening on port 8080\n");
+    printf("Server listening on port 8000\n");
 
-    // Add a route
     get("/hello", hello_handler);
 
     while (1)

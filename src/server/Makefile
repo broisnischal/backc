@@ -1,18 +1,22 @@
 # Variables
 CC = gcc
-CFLAGS = -L../hello -lhello
+CFLAGS = -Wall -Wextra -I../hello
+LDFLAGS = -L../hello -lhello
+
+SRCS = server.c router.c response.c
+OBJS = $(SRCS:.c=.o)
+TARGET = my_server
 
 # Targets
-all: my_server
+all: $(TARGET)
 
-my_server: server.o router.o
-	$(CC) -o my_server server.o router.o $(CFLAGS)
+$(TARGET): $(OBJS)
+	$(CC) -o $@ $^ $(LDFLAGS)
 
-server.o: server.c router.h
-	$(CC) -c server.c
-
-router.o: router.c router.h
-	$(CC) -c router.c
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f *.o my_server
+	rm -f $(OBJS) $(TARGET)
+
+.PHONY: all clean

@@ -1,54 +1,36 @@
-#include <stdio.h>
-#include <string.h>
 #include "router.h"
+#include <string.h>
 
 typedef struct
 {
     char path[100];
-    char method[10];
-    void (*handler)();
+    void (*handler)(int);
 } Route;
 
-Route routes[100];
+#define MAX_ROUTES 100
+Route routes[MAX_ROUTES];
 int route_count = 0;
 
-void add_route(char path[], char method[], void (*handler)(void))
+void get(char path[], void (*handler)(int))
 {
-    strcpy(routes[route_count].path, path);
-    strcpy(routes[route_count].method, method);
-    routes[route_count].handler = handler;
-    route_count++;
+    if (route_count < MAX_ROUTES)
+    {
+        strcpy(routes[route_count].path, path);
+        routes[route_count].handler = handler;
+        route_count++;
+    }
 }
 
-void handle_request(char path[], char method[])
+void handle_request(char *path, char *method, int client_socket)
 {
+    (void)method; // This line marks the 'method' parameter as intentionally unused
     for (int i = 0; i < route_count; i++)
     {
-        if (strcmp(routes[i].path, path) == 0 && strcmp(routes[i].method, method) == 0)
+        if (strcmp(routes[i].path, path) == 0)
         {
-            routes[i].handler();
+            routes[i].handler(client_socket);
             return;
         }
     }
-    printf("No route found for %s %s\n", method, path);
-}
-
-void get(char path[], void (*handler)(void))
-{
-    add_route(path, "GET", handler);
-}
-
-void post(char path[], void (*handler)(void))
-{
-    add_route(path, "POST", handler);
-}
-
-void put(char path[], void (*handler)(void))
-{
-    add_route(path, "PUT", handler);
-}
-
-void delete(char path[], void (*handler)(void))
-{
-    add_route(path, "DELETE", handler);
+    // Handle 404 Not Found
 }
