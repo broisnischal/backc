@@ -1,16 +1,13 @@
-CC = gcc
-CFLAGS = -Wall -Wextra -pedantic
-TARGET = my_server
-SRCS = src/main.c src/router.c
-OBJS = $(SRCS:.c=.o)
+# Variables
+SUBDIRS = src/hello src/server
 
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
+# Targets
+.PHONY: all clean
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-.PHONY: clean
+all:
+	$(MAKE) -C src/hello
+	$(MAKE) -C src/server
 
 clean:
-	rm -f $(TARGET) $(OBJS)
+	$(MAKE) -C src/hello clean
+	$(MAKE) -C src/server clean
