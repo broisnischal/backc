@@ -14,6 +14,12 @@ void hello_handler(int client_socket)
     response(client_socket, "200 OK", "text/html", response_body);
 }
 
+void json_handler(int client_socket)
+{
+    const char *response_body = "{\"message\": \"Hello, World!\"}";
+    response(client_socket, "200 OK", "application/json", response_body);
+}
+
 void handle_client(int client_socket)
 {
     char buffer[1024];
@@ -84,6 +90,7 @@ int main()
     printf("Server listening on port 8000\n");
 
     get("/hello", hello_handler);
+    get("/json", json_handler);
 
     while (1)
     {
